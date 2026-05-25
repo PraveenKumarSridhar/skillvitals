@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 
 from fastmcp import FastMCP
 
-from .analysis import dormant_token_cost, find_dormant
+from .analysis import dormant_on_activation_cost, dormant_token_cost, find_dormant
 from .dashboard import write_dashboard
 from .pipeline import collect
 from .prescribe import prescribe as run_prescribe
@@ -51,18 +51,23 @@ def vitals_history(days: int = 30) -> str:
 
 @mcp.tool
 def vitals_dormancy(days: int = 14) -> str:
-    """List skills inactive for >= `days`, with the context tokens they cost every
-    session even though they never fire. Surfaces dead weight."""
+    """List skills inactive for >= `days`. Skills load progressively, so the
+    standing per-session cost is each skill's always-loaded description; its body
+    loads only when it activates. Both are shown."""
     now = datetime.now(UTC)
     snap = collect(window_days=days, now=now)
     dead = find_dormant(snap.vitals, days=days, now=now)
-    cost = dormant_token_cost(snap.vitals, days=days, now=now)
+    always = dormant_token_cost(snap.vitals, days=days, now=now)
+    onfire = dormant_on_activation_cost(snap.vitals, days=days, now=now)
     lines = [f"## {len(dead)} dormant skills (inactive ≥ {days}d)", "",
-             "| skill | ctx tokens | last seen |", "|-------|-----------|-----------|"]
+             "| skill | always-on | on-fire | last seen |",
+             "|-------|-----------|---------|-----------|"]
     for v in dead:
         last = "never" if v.days_dormant is None else f"{v.days_dormant}d ago"
-        lines.append(f"| {v.name} | {humanize(v.context_tokens)} | {last} |")
-    lines += ["", f"**{humanize(cost)} tokens of dead weight loaded every session.**"]
+        lines.append(f"| {v.name} | {humanize(v.always_on_tokens)} | "
+                     f"{humanize(v.on_activation_tokens)} | {last} |")
+    lines += ["", f"**{humanize(always)} tokens of always-loaded descriptions ride along every "
+              f"session.** Another {humanize(onfire)} tokens (their bodies) load only on activation."]
     return "\n".join(lines)
 
 

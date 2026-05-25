@@ -32,4 +32,21 @@ def fake_claude_home(tmp_path):
          "message": {"role": "assistant", "usage": {"output_tokens": 50}, "content": []}},
     ]
     (proj / "s1.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+
+    # 0.2.0: enable-state + native usage. local-skills marketplace maps the user
+    # skills dir; leakcheck's plugin is disabled.
+    (home / "settings.json").write_text(json.dumps({
+        "enabledPlugins": {
+            "docx@local-skills": True,
+            "data-analysis@local-skills": True,
+            "leakcheck@local-skills": False,
+        },
+        "extraKnownMarketplaces": {
+            "local-skills": {"source": {"source": "directory", "path": str(skills)}},
+        },
+    }), encoding="utf-8")
+    # ~/.claude.json sits next to the .claude dir
+    (tmp_path / ".claude.json").write_text(json.dumps({
+        "skillUsage": {"docx": {"usageCount": 4, "lastUsedAt": 1779000000000}},
+    }), encoding="utf-8")
     return home

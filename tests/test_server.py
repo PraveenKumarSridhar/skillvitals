@@ -33,4 +33,5 @@ def test_vitals_scan_tool_returns_markdown(fake_claude_home):
 
 def test_vitals_dormancy_tool(fake_claude_home):
     out = _call("vitals_dormancy", {"days": 14}, fake_claude_home)
-    assert "dead weight" in out.lower()
+    assert "always-loaded" in out.lower()
+    assert "on activation" in out.lower()

@@ -59,8 +59,9 @@ def main() -> None:
 def scan(claude_home, days, now):
     """Scan installed skills and report fires, context cost, and health."""
     _apply_home(claude_home)
-    from .analysis import dormant_token_cost, find_dormant
+    from .analysis import dormant_on_activation_cost, dormant_token_cost, find_dormant
     from .hooks import detect_skill_hook
+    from .models import Health
     from .report import build_rich_table
     from .tokens import humanize
 
@@ -68,14 +69,26 @@ def scan(claude_home, days, now):
     snap = _collect(days, n)
     console.print(build_rich_table(snap.vitals))
 
-    cost = dormant_token_cost(snap.vitals, days=days, now=n)
+    always = dormant_token_cost(snap.vitals, days=days, now=n)
+    onfire = dormant_on_activation_cost(snap.vitals, days=days, now=n)
     dead = find_dormant(snap.vitals, days=days, now=n)
     if dead:
         console.print(
-            f"\n[yellow]{len(dead)} dormant/never-fired skills are costing you "
-            f"[bold]{humanize(cost)}[/bold] tokens per session.[/yellow]"
+            f"\n[yellow]{len(dead)} dormant/never-fired skills add ~[bold]{humanize(always)}[/bold] "
+            "tokens of always-loaded descriptions per session.[/yellow]", soft_wrap=True,
+        )
+        console.print(
+            f"[dim]Their bodies (~{humanize(onfire)} tokens) load only when they activate.[/dim]",
+            soft_wrap=True,
         )
         console.print("Run [cyan]skillvitals prescribe[/cyan] for fixes.")
+
+    disabled = [v for v in snap.vitals if v.health == Health.DISABLED]
+    if disabled:
+        console.print(
+            f"\n[dim]{len(disabled)} installed skill(s) are disabled (plugin off): "
+            f"{', '.join(v.name for v in disabled)}.[/dim]", soft_wrap=True,
+        )
 
     hook = detect_skill_hook(snap.config.home, snap.config.cwd)
     status = "[green]detected[/green]" if hook["has_prompt_hook"] else "[dim]not detected[/dim]"
@@ -134,7 +147,7 @@ def history(claude_home, days, now):
 def dormancy(claude_home, days, now):
     """List skills inactive for N days and their context cost."""
     _apply_home(claude_home)
-    from .analysis import dormant_token_cost, find_dormant
+    from .analysis import dormant_on_activation_cost, dormant_token_cost, find_dormant
     from .tokens import humanize
 
     n = _now(now)
@@ -142,15 +155,21 @@ def dormancy(claude_home, days, now):
     dead = find_dormant(snap.vitals, days=days, now=n)
     table = Table(title=f"dormant skills (inactive ≥ {days}d)", header_style="bold yellow")
     table.add_column("skill")
-    table.add_column("ctx tokens", justify="right")
+    table.add_column("always-on", justify="right")
+    table.add_column("on-fire", justify="right")
     table.add_column("last seen")
     for v in dead:
         last = "never" if v.days_dormant is None else f"{v.days_dormant}d ago"
-        table.add_row(v.name, humanize(v.context_tokens), last)
+        table.add_row(v.name, humanize(v.always_on_tokens), humanize(v.on_activation_tokens), last)
     console.print(table)
+    always = dormant_token_cost(snap.vitals, days=days, now=n)
+    onfire = dormant_on_activation_cost(snap.vitals, days=days, now=n)
     console.print(
-        f"\n[bold yellow]{humanize(dormant_token_cost(snap.vitals, days=days, now=n))}[/bold yellow]"
-        " tokens of dead weight loaded every session."
+        f"\n[bold yellow]{humanize(always)}[/bold yellow] tokens of always-loaded descriptions "
+        "ride along every session."
+    )
+    console.print(
+        f"[dim]Another {humanize(onfire)} tokens (their bodies) load only when they activate.[/dim]"
     )
 
 

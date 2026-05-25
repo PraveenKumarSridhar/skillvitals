@@ -11,10 +11,12 @@ from datetime import UTC, datetime
 
 from .analysis import compute_vitals
 from .config import Config, load_config
+from .enablement import annotate_enablement
 from .logparser import parse_sessions
 from .models import Fire, ParseError, SessionInfo, Skill, SkillVitals
 from .registry import scan_skills
 from .storage import Database
+from .usage import read_skill_usage
 
 
 @dataclass
@@ -40,8 +42,10 @@ def collect(
     now = now or datetime.now(UTC)
 
     skills = scan_skills(config.skill_roots())
+    skills = annotate_enablement(skills, config.home, config.cwd)
     fires, sessions, errors = parse_sessions(config.projects_dir)
-    vitals = compute_vitals(skills, fires, window_days=window_days, now=now)
+    usage = read_skill_usage(config.home)
+    vitals = compute_vitals(skills, fires, window_days=window_days, now=now, usage=usage)
 
     if persist:
         try:
