@@ -9,7 +9,7 @@ the default path never spends tokens or touches the network.
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from .models import Health, Prescription, Severity, Skill, SkillVitals
 
@@ -114,7 +114,7 @@ def _redundancy(vitals: list[SkillVitals]) -> list[Prescription]:
 
 def prescribe(vitals: list[SkillVitals], *, now: datetime | None = None) -> list[Prescription]:
     """Return all prescriptions across the given vitals (rule-based)."""
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     out: list[Prescription] = []
     for v in vitals:
         out.extend(_skill_rules(v, now))

@@ -1,5 +1,5 @@
 import json
-from datetime import timezone
+from datetime import UTC
 
 from skillvitals.logparser import parse_line, parse_sessions
 from skillvitals.models import FireKind
@@ -50,7 +50,7 @@ def test_parse_line_invoke():
     assert f.session_id == "sess-1"
     assert f.cli_version == "2.1.146"
     assert f.timestamp.tzinfo is not None
-    assert f.timestamp.astimezone(timezone.utc).hour == 21
+    assert f.timestamp.astimezone(UTC).hour == 21
     assert f.output_tokens == 494
 
 

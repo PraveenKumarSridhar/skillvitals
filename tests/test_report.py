@@ -1,10 +1,10 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from skillvitals.analysis import compute_vitals
 from skillvitals.models import Fire, FireKind, Skill
 from skillvitals.report import humanize_age, render_markdown
 
-NOW = datetime(2026, 5, 25, tzinfo=timezone.utc)
+NOW = datetime(2026, 5, 25, tzinfo=UTC)
 
 
 def _vitals():
@@ -13,9 +13,9 @@ def _vitals():
         Skill("dead", "old skill", "/d", "user", None, 4200, 30, {}, True),
     ]
     fires = [
-        Fire("active", "active", None, FireKind.INVOKE, datetime(2026, 5, 24, tzinfo=timezone.utc), "s1"),
-        Fire("active", "active", None, FireKind.ATTRIBUTION, datetime(2026, 5, 24, tzinfo=timezone.utc), "s1"),
-        Fire("dead", "dead", None, FireKind.INVOKE, datetime(2026, 4, 1, tzinfo=timezone.utc), "s0"),
+        Fire("active", "active", None, FireKind.INVOKE, datetime(2026, 5, 24, tzinfo=UTC), "s1"),
+        Fire("active", "active", None, FireKind.ATTRIBUTION, datetime(2026, 5, 24, tzinfo=UTC), "s1"),
+        Fire("dead", "dead", None, FireKind.INVOKE, datetime(2026, 4, 1, tzinfo=UTC), "s0"),
     ]
     return compute_vitals(skills, fires, window_days=14, now=NOW)
 

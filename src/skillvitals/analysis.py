@@ -14,7 +14,7 @@ these are heuristics, not ground truth):
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from .models import Fire, FireKind, Health, Skill, SkillVitals
 
@@ -44,7 +44,7 @@ def _tz(fires: list[Fire]):
     for f in fires:
         if f.timestamp and f.timestamp.tzinfo:
             return f.timestamp.tzinfo
-    return timezone.utc
+    return UTC
 
 
 def compute_vitals(
@@ -127,7 +127,7 @@ def find_dormant(
     vitals: list[SkillVitals], *, days: int = 14, now: datetime | None = None
 ) -> list[SkillVitals]:
     """Skills inactive for >= `days`, sorted by context cost (most expensive first)."""
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     dead = [v for v in vitals if _is_dormant_for(v, days, now)]
     return sorted(dead, key=lambda v: v.context_tokens, reverse=True)
 

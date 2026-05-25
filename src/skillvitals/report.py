@@ -7,7 +7,7 @@ read the same `SkillVitals` list, so they never disagree.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from .analysis import dormant_token_cost, find_dormant
 from .models import Health, SkillVitals
@@ -45,7 +45,7 @@ def render_markdown(
     now: datetime | None = None,
     dormant_days: int = 14,
 ) -> str:
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     rows = sorted(vitals, key=_sort_key)
     lines = [
         f"## skillvitals — {len(vitals)} skills scanned",
@@ -98,7 +98,7 @@ def build_rich_table(vitals: list[SkillVitals]):
 
 def summary_line(vitals: list[SkillVitals], *, dormant_days: int = 14,
                  now: datetime | None = None) -> str:
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     dead = find_dormant(vitals, days=dormant_days, now=now)
     cost = dormant_token_cost(vitals, days=dormant_days, now=now)
     return (

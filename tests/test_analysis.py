@@ -1,9 +1,9 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from skillvitals.analysis import compute_vitals, dormant_token_cost, find_dormant
 from skillvitals.models import Fire, FireKind, Health, Skill
 
-NOW = datetime(2026, 5, 25, tzinfo=timezone.utc)
+NOW = datetime(2026, 5, 25, tzinfo=UTC)
 
 
 def mk_skill(name, tokens=3000):
@@ -13,7 +13,7 @@ def mk_skill(name, tokens=3000):
 
 def fire(name, day, kind=FireKind.ATTRIBUTION, sid="s1"):
     return Fire(skill_id=name, name=name, plugin=None, kind=kind,
-                timestamp=datetime(2026, 5, day, tzinfo=timezone.utc), session_id=sid)
+                timestamp=datetime(2026, 5, day, tzinfo=UTC), session_id=sid)
 
 
 def test_health_classification_all_states():
@@ -54,7 +54,7 @@ def test_counts_and_context_cost():
     assert v.context_tokens == 4200
     assert v.tokens_per_fire == 4200
     assert v.sessions == 2
-    assert v.last_fired == datetime(2026, 5, 22, tzinfo=timezone.utc)
+    assert v.last_fired == datetime(2026, 5, 22, tzinfo=UTC)
 
 
 def test_find_dormant_and_token_cost():

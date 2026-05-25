@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from skillvitals.models import Fire, FireKind, SessionInfo, Skill
 from skillvitals.storage import Database
@@ -12,14 +12,14 @@ def _skill(name="docx"):
 
 def _fire(ts, kind=FireKind.INVOKE, name="docx", sid="s1"):
     return Fire(skill_id=name, name=name, plugin=None, kind=kind,
-                timestamp=datetime(2026, 5, ts, 12, 0, tzinfo=timezone.utc), session_id=sid,
+                timestamp=datetime(2026, 5, ts, 12, 0, tzinfo=UTC), session_id=sid,
                 output_tokens=100)
 
 
 def _session(sid="s1"):
     return SessionInfo(session_id=sid, project="-proj", cwd="/proj", cli_version="2.1.146",
-                       first_ts=datetime(2026, 5, 1, tzinfo=timezone.utc),
-                       last_ts=datetime(2026, 5, 20, tzinfo=timezone.utc), fire_count=1)
+                       first_ts=datetime(2026, 5, 1, tzinfo=UTC),
+                       last_ts=datetime(2026, 5, 20, tzinfo=UTC), fire_count=1)
 
 
 def test_ingest_and_load_roundtrip(tmp_path):

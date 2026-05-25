@@ -1,10 +1,10 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from skillvitals.analysis import compute_vitals
 from skillvitals.models import Fire, FireKind, Severity, Skill
 from skillvitals.prescribe import prescribe, rewrite_description
 
-NOW = datetime(2026, 5, 25, tzinfo=timezone.utc)
+NOW = datetime(2026, 5, 25, tzinfo=UTC)
 
 
 def sk(name, desc, valid=True, q=50, tokens=2000):
@@ -46,7 +46,7 @@ def test_redundant_skills_detected():
 
 def test_dormant_high_cost_flagged():
     fires = [Fire("big", "big", None, FireKind.INVOKE,
-                  datetime(2026, 1, 1, tzinfo=timezone.utc), "s")]
+                  datetime(2026, 1, 1, tzinfo=UTC), "s")]
     v = vitals_for([sk("big", "Use when you need the big thing", tokens=6000)], fires)
     assert "dormant-cost" in rules_for(prescribe(v, now=NOW), "big")
 
