@@ -18,3 +18,6 @@ htmlcov/
 
 # launch drafts — keep local, do not publish
 docs/launch/
+
+.DS_Store
+**/.DS_Store
