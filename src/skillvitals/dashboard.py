@@ -18,7 +18,7 @@ from .tokens import humanize
 
 _STATUS_LABEL = {
     Health.HEALTHY: "healthy", Health.DORMANT: "dormant", Health.MISFIRING: "misfiring",
-    Health.NEVER_FIRED: "never-fired", Health.ORPHAN: "orphan",
+    Health.NEVER_FIRED: "never-fired", Health.ORPHAN: "orphan", Health.DISABLED: "disabled",
 }
 
 _env = Environment(
@@ -29,15 +29,17 @@ _env = Environment(
 
 def _rows(vitals: list[SkillVitals]) -> list[dict]:
     order = {Health.HEALTHY: 0, Health.MISFIRING: 1, Health.DORMANT: 2,
-             Health.NEVER_FIRED: 3, Health.ORPHAN: 4}
+             Health.NEVER_FIRED: 3, Health.DISABLED: 4, Health.ORPHAN: 5}
     rows = []
-    for v in sorted(vitals, key=lambda v: (order[v.health], -v.attribution_count, -v.context_tokens)):
+    for v in sorted(vitals, key=lambda v: (order[v.health], -v.attribution_count, -v.on_activation_tokens)):
         rows.append({
             "name": v.name,
             "fires": v.invoke_count,
             "engaged": v.attribution_count,
-            "ctx": v.context_tokens,
-            "ctx_h": humanize(v.context_tokens),
+            "always_on": v.always_on_tokens,
+            "always_on_h": humanize(v.always_on_tokens),
+            "on_fire": v.on_activation_tokens,
+            "on_fire_h": humanize(v.on_activation_tokens),
             "quality": v.skill.quality_score if v.skill else 0,
             "last_seen": humanize_age(v.days_dormant),
             "age_v": -1 if v.days_dormant is None else v.days_dormant,

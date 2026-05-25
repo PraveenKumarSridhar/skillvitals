@@ -34,6 +34,9 @@ class Skill:
     quality_score: int  # 0-100 description quality
     quality_breakdown: dict[str, int]  # component -> points
     frontmatter_valid: bool
+    description_tokens: int = 0  # always-on cost: the part loaded every session
+    enabled: bool | None = None  # None = could not determine
+    plugin_ref: str | None = None  # 'plugin@marketplace' (enable-state key)
 
     @property
     def namespaced_id(self) -> str:
@@ -67,6 +70,14 @@ class Fire:
 
 
 @dataclass(frozen=True)
+class SkillUsage:
+    """Claude Code's own per-skill ledger from ~/.claude.json (skillUsage)."""
+
+    usage_count: int
+    last_used_ms: int | None
+
+
+@dataclass(frozen=True)
 class SessionInfo:
     session_id: str
     project: str  # the project dir name under ~/.claude/projects
@@ -92,6 +103,7 @@ class Health(str, Enum):
     MISFIRING = "misfiring"
     NEVER_FIRED = "never-fired"
     ORPHAN = "orphan"  # in logs but not installed
+    DISABLED = "disabled"  # installed on disk but its plugin is not enabled
 
 
 @dataclass
@@ -112,6 +124,11 @@ class SkillVitals:
     engagement_ratio: float
     health: Health
     sessions: int  # distinct sessions it appeared in
+    always_on_tokens: int = 0  # description tokens — loaded every session
+    on_activation_tokens: int = 0  # full SKILL.md tokens — loaded only when it fires
+    enabled: bool | None = None
+    native_usage_count: int = 0  # from Claude Code's own skillUsage ledger
+    source_discrepancy: str | None = None  # set when jsonl and native counts disagree
 
     @property
     def total_fires(self) -> int:
@@ -125,6 +142,7 @@ class SkillVitals:
             Health.MISFIRING: "⚠️",
             Health.NEVER_FIRED: "💤",
             Health.ORPHAN: "❓",
+            Health.DISABLED: "🚫",
         }[self.health]
 
 

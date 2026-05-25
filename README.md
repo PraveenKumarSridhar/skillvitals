@@ -25,15 +25,19 @@ $ skillvitals scan
 │ ab-test-coach      │     2 │       2 │ 5.7k │ 3d ago    │ ⚠️  misfiring  │
 │ leakcheck          │     1 │       3 │ 3.1k │ 40d ago   │ ⚠️  dormant    │
 │ data-analysis      │     0 │       0 │ 4.2k │ never     │ 💤 never-fired │
-│ changelog-writer   │     0 │       0 │ 1.4k │ never     │ 💤 never-fired │
+│ changelog-writer   │     0 │       0 │ 1.4k │ never     │ 🚫 disabled    │
 └────────────────────┴───────┴─────────┴──────┴───────────┴────────────────┘
 
-3 dormant/never-fired skills are costing you 8.7k tokens per session.
+2 dormant/never-fired skills add ~29 tokens of always-loaded descriptions per session.
+Their bodies (~7.3k tokens) load only when they activate.
+1 installed skill is disabled (plugin off): changelog-writer.
 Run `skillvitals prescribe` for fixes.
 ```
 
-That last line is the point: **most people have thousands of tokens of dead
-weight in every single session and no way to see it.**
+The point: skills load progressively. What rides along in *every* session is each
+skill's description; the body only loads when the skill fires. skillvitals shows
+both — the standing **always-on** cost and the **on-fire** body size — so you can
+see which skills are dead weight, which misfire, and which are quietly disabled.
 
 ## Install
 
@@ -87,8 +91,11 @@ skillvitals reads two things, entirely locally:
 
 1. **Your installed skills** — every `SKILL.md` under `~/.claude/skills`, the
    plugin cache, and the current project's `.claude/skills`. It parses the
-   frontmatter, estimates the context cost (tokens of the loaded `SKILL.md`),
-   and scores description quality.
+   frontmatter, scores description quality, and measures two token costs:
+   the **always-on** description (loaded every session) and the **on-fire** body
+   (loaded only when the skill activates). It also reads `enabledPlugins` to know
+   which skills are currently disabled, and reconciles against Claude Code's own
+   `skillUsage` ledger so the counts don't rely on one source.
 
 2. **Your session logs** — the JSONL transcripts under `~/.claude/projects`. It
    extracts two activation signals per skill:
@@ -96,15 +103,19 @@ skillvitals reads two things, entirely locally:
    - **engaged** — assistant messages tagged with that skill's `attributionSkill`
      (how much the skill was actually leaned on afterward).
 
-Joining the two gives each skill a health status:
+Joining these gives each skill a health status:
 
 | status | meaning |
 |--------|---------|
 | ✅ **healthy** | activated recently with real follow-through |
-| ⚠️ **misfiring** | invoked but barely used afterward — may be matching the wrong prompts |
+| ⚠️ **misfiring** | invoked but barely used afterward; may be matching the wrong prompts |
 | ⚠️ **dormant** | activated before, but not within the window |
-| 💤 **never-fired** | installed, costs tokens, has never activated |
+| 💤 **never-fired** | installed, has never activated |
+| 🚫 **disabled** | installed on disk but its plugin is turned off (never loads) |
 | ❓ **orphan** | appears in logs but is no longer installed |
+
+Health is derived from logged activity within the window, so it reflects recent
+behavior and can lag a config change you just made.
 
 These are honest heuristics, not ground truth — the thresholds are documented in
 `analysis.py` and `prescribe.py`.

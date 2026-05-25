@@ -17,8 +17,18 @@ def test_scan_lists_skills_and_status(fake_claude_home):
     assert "docx" in r.output
     assert "data-analysis" in r.output
     assert "leakcheck" in r.output
-    # docx fired; the other two are dead weight
-    assert "tokens per session" in r.output
+    # honest per-session framing (0.2.0)
+    assert "per session" in r.output
+
+
+def test_scan_shows_disabled_and_honest_framing(fake_claude_home):
+    r = _run(["scan", "--now", "2026-05-25"], fake_claude_home)
+    assert r.exit_code == 0
+    # leakcheck's plugin is disabled in the fixture
+    assert "disabled" in r.output.lower()
+    # the per-session cost is the always-loaded descriptions, not the bodies
+    assert "always-loaded descriptions per session" in r.output
+    assert "load only when they activate" in r.output
 
 
 def test_report_markdown(fake_claude_home):

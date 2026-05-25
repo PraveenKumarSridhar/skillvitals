@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from .models import Fire, FireKind, Health, Skill, SkillVitals
+from .models import Fire, FireKind, Health, Skill, SkillUsage, SkillVitals
 
 MISFIRE_THRESHOLD = 2.0  # attribution messages per invoke below this looks like a misfire
 
@@ -24,6 +24,7 @@ MISFIRE_THRESHOLD = 2.0  # attribution messages per invoke below this looks like
 def _classify(
     *,
     has_skill: bool,
+    enabled: bool | None,
     total_activity: int,
     window_activity: int,
     invoke_count: int,
@@ -31,6 +32,10 @@ def _classify(
 ) -> Health:
     if not has_skill:
         return Health.ORPHAN
+    if enabled is False:
+        # A disabled skill isn't loaded and can't fire; this overrides any
+        # backward-looking activity-based status (the 0.1.0 "healthy" bug).
+        return Health.DISABLED
     if total_activity == 0:
         return Health.NEVER_FIRED
     if window_activity == 0:
@@ -53,9 +58,11 @@ def compute_vitals(
     *,
     window_days: int = 14,
     now: datetime | None = None,
+    usage: dict[str, SkillUsage] | None = None,
 ) -> list[SkillVitals]:
     now = now or datetime.now(tz=_tz(fires))
     window_start = now - timedelta(days=window_days)
+    usage = usage or {}
 
     by_name: dict[str, list[Fire]] = {}
     for f in fires:
@@ -78,16 +85,33 @@ def compute_vitals(
         stamps = [f.timestamp for f in group if f.timestamp]
         last_fired = max(stamps) if stamps else None
         first_fired = min(stamps) if stamps else None
-        days_dormant = (now - last_fired).days if last_fired else None
 
-        invoke_count = len(invokes)
+        jsonl_invokes = len(invokes)
         attribution_count = len(attrs)
+
+        # Reconcile with Claude Code's native skillUsage ledger (second source).
+        native = usage.get(name)
+        native_count = native.usage_count if native else 0
+        invoke_count = max(jsonl_invokes, native_count)
+        native_last = None
+        if native and native.last_used_ms:
+            native_last = datetime.fromtimestamp(native.last_used_ms / 1000, tz=now.tzinfo or UTC)
+        candidates = [t for t in (last_fired, native_last) if t]
+        last_fired = max(candidates) if candidates else None
+        days_dormant = (now - last_fired).days if last_fired else None
+        discrepancy = (
+            f"jsonl invokes={jsonl_invokes}, native usageCount={native_count}"
+            if native_count and native_count != jsonl_invokes
+            else None
+        )
+
         engagement_ratio = attribution_count / max(invoke_count, 1)
 
         context_tokens = skill.context_tokens if skill else 0
         health = _classify(
             has_skill=skill is not None,
-            total_activity=len(group),
+            enabled=skill.enabled if skill else None,
+            total_activity=len(group) + native_count,
             window_activity=len(win),
             invoke_count=invoke_count,
             engagement_ratio=engagement_ratio,
@@ -109,14 +133,23 @@ def compute_vitals(
                 engagement_ratio=engagement_ratio,
                 health=health,
                 sessions=len({f.session_id for f in group if f.session_id}),
+                always_on_tokens=skill.description_tokens if skill else 0,
+                on_activation_tokens=context_tokens,
+                enabled=skill.enabled if skill else None,
+                native_usage_count=native_count,
+                source_discrepancy=discrepancy,
             )
         )
     return out
 
 
 def _is_dormant_for(v: SkillVitals, days: int, now: datetime) -> bool:
-    """True if the skill has not activated within `days` (never-fired counts)."""
-    if v.health == Health.ORPHAN:
+    """True if the skill has not activated within `days` (never-fired counts).
+
+    Orphan (not installed) and disabled (not loaded) skills are excluded — they
+    aren't dead weight in your context.
+    """
+    if v.health in (Health.ORPHAN, Health.DISABLED):
         return False
     if v.last_fired is None:
         return True
@@ -126,14 +159,25 @@ def _is_dormant_for(v: SkillVitals, days: int, now: datetime) -> bool:
 def find_dormant(
     vitals: list[SkillVitals], *, days: int = 14, now: datetime | None = None
 ) -> list[SkillVitals]:
-    """Skills inactive for >= `days`, sorted by context cost (most expensive first)."""
+    """Skills inactive for >= `days`, sorted by always-on cost (most expensive first)."""
     now = now or datetime.now(UTC)
     dead = [v for v in vitals if _is_dormant_for(v, days, now)]
-    return sorted(dead, key=lambda v: v.context_tokens, reverse=True)
+    return sorted(dead, key=lambda v: v.always_on_tokens, reverse=True)
 
 
 def dormant_token_cost(
     vitals: list[SkillVitals], *, days: int = 14, now: datetime | None = None
 ) -> int:
-    """Total context tokens loaded every session by dormant skills — the viral number."""
-    return sum(v.context_tokens for v in find_dormant(vitals, days=days, now=now))
+    """Always-on (description) tokens dormant skills load every session.
+
+    This is the honest per-session cost: skills load progressively, so a dormant
+    skill's standing cost is its description, not its full body.
+    """
+    return sum(v.always_on_tokens for v in find_dormant(vitals, days=days, now=now))
+
+
+def dormant_on_activation_cost(
+    vitals: list[SkillVitals], *, days: int = 14, now: datetime | None = None
+) -> int:
+    """Body tokens dormant skills *would* load if they ever activated."""
+    return sum(v.on_activation_tokens for v in find_dormant(vitals, days=days, now=now))
