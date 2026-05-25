@@ -25,11 +25,12 @@ $ skillvitals scan
 │ ab-test-coach      │     2 │       2 │ 5.7k │ 3d ago    │ ⚠️  misfiring  │
 │ leakcheck          │     1 │       3 │ 3.1k │ 40d ago   │ ⚠️  dormant    │
 │ data-analysis      │     0 │       0 │ 4.2k │ never     │ 💤 never-fired │
-│ changelog-writer   │     0 │       0 │ 1.4k │ never     │ 💤 never-fired │
+│ changelog-writer   │     0 │       0 │ 1.4k │ never     │ 🚫 disabled    │
 └────────────────────┴───────┴─────────┴──────┴───────────┴────────────────┘
 
-3 dormant/never-fired skills add ~310 tokens of always-loaded descriptions per session.
-Their bodies (~8.7k tokens) load only when they activate.
+2 dormant/never-fired skills add ~29 tokens of always-loaded descriptions per session.
+Their bodies (~7.3k tokens) load only when they activate.
+1 installed skill is disabled (plugin off): changelog-writer.
 Run `skillvitals prescribe` for fixes.
 ```
 

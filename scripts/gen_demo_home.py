@@ -52,6 +52,16 @@ def main():
                                      "content": []}})
     (proj / "demo.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n",
                                      encoding="utf-8")
+
+    # enable-state: all skills enabled except changelog-writer (plugin turned off),
+    # so the demo showcases the `disabled` status. Marketplace maps the skills dir.
+    enabled = {f"{name}@demo": (name != "changelog-writer") for name, *_ in SKILLS}
+    (home / "settings.json").write_text(json.dumps({
+        "enabledPlugins": enabled,
+        "extraKnownMarketplaces": {
+            "demo": {"source": {"source": "directory", "path": str(skills_dir)}},
+        },
+    }), encoding="utf-8")
     print(f"demo home ready at {home} ({len(SKILLS)} skills, {len(rows)} log lines)")
 
 
