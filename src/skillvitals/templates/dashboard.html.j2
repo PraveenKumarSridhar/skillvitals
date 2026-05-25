@@ -30,7 +30,7 @@
   td.num { text-align:right; font-variant-numeric: tabular-nums; }
   .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:600; }
   .healthy { color:var(--green); } .dormant,.misfiring { color:var(--yellow); }
-  .never-fired { color:var(--dim); } .orphan { color:var(--red); }
+  .never-fired { color:var(--dim); } .orphan,.disabled { color:var(--red); }
   .bar { height:6px; background:#21262d; border-radius:4px; overflow:hidden; min-width:60px; }
   .bar > i { display:block; height:100%; background:var(--accent); }
   .rx { margin-top:28px; }
@@ -50,7 +50,7 @@
     <div class="card"><div class="n">{{ total }}</div><div class="l">skills</div></div>
     <div class="card"><div class="n">{{ healthy }}</div><div class="l">healthy</div></div>
     <div class="card alert"><div class="n">{{ dormant_count }}</div><div class="l">dormant / never-fired</div></div>
-    <div class="card alert"><div class="n">{{ dormant_cost_h }}</div><div class="l">dead tokens / session</div></div>
+    <div class="card alert"><div class="n">{{ dormant_cost_h }}</div><div class="l">always-loaded tokens / session</div></div>
   </div>
 
   <table id="vitals">
@@ -58,10 +58,11 @@
       <th onclick="sortTable(0,'s')">skill</th>
       <th onclick="sortTable(1,'n')">fires</th>
       <th onclick="sortTable(2,'n')">engaged</th>
-      <th onclick="sortTable(3,'n')">ctx tokens</th>
-      <th onclick="sortTable(4,'n')">quality</th>
-      <th onclick="sortTable(5,'n')">last seen</th>
-      <th onclick="sortTable(6,'s')">status</th>
+      <th onclick="sortTable(3,'n')" title="description tokens, loaded every session">always-on</th>
+      <th onclick="sortTable(4,'n')" title="body tokens, loaded only when the skill activates">on-fire</th>
+      <th onclick="sortTable(5,'n')">quality</th>
+      <th onclick="sortTable(6,'n')">last seen</th>
+      <th onclick="sortTable(7,'s')">status</th>
     </tr></thead>
     <tbody>
     {% for r in rows %}
@@ -69,7 +70,8 @@
         <td>{{ r.name }}</td>
         <td class="num" data-v="{{ r.fires }}">{{ r.fires }}</td>
         <td class="num" data-v="{{ r.engaged }}">{{ r.engaged }}</td>
-        <td class="num" data-v="{{ r.ctx }}">{{ r.ctx_h }}</td>
+        <td class="num" data-v="{{ r.always_on }}">{{ r.always_on_h }}</td>
+        <td class="num" data-v="{{ r.on_fire }}">{{ r.on_fire_h }}</td>
         <td class="num" data-v="{{ r.quality }}">
           <div class="bar" title="{{ r.quality }}/100"><i style="width:{{ r.quality }}%"></i></div>
         </td>
@@ -85,7 +87,7 @@
     <h2>Prescriptions ({{ prescriptions|length }})</h2>
     <ul>
       {% for p in prescriptions %}
-        <li>[{{ p.severity }}] <b>{{ p.skill_name }}</b> — {{ p.message }}</li>
+        <li>[{{ p.severity }}] <b>{{ p.skill_name }}</b>: {{ p.message }}</li>
       {% endfor %}
     </ul>
   </div>

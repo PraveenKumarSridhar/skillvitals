@@ -1,7 +1,8 @@
+from dataclasses import replace
 from datetime import UTC, datetime
 
 from skillvitals.analysis import compute_vitals, dormant_token_cost, find_dormant
-from skillvitals.models import Fire, FireKind, Health, Skill
+from skillvitals.models import Fire, FireKind, Health, Skill, SkillUsage
 
 NOW = datetime(2026, 5, 25, tzinfo=UTC)
 
@@ -75,20 +76,16 @@ def test_find_dormant_and_token_cost():
     assert dormant_token_cost(vitals, days=14, now=NOW) == (5000 // 50) + (2000 // 50)
 
 
-from skillvitals.models import Health as _Health, SkillUsage as _SkillUsage
-from dataclasses import replace as _replace
-
-
 def test_disabled_overrides_healthy():
-    s = _replace(mk_skill("off"), enabled=False, description_tokens=100)
+    s = replace(mk_skill("off"), enabled=False, description_tokens=100)
     fires = [fire("off", 24, FireKind.INVOKE), *[fire("off", 24) for _ in range(5)]]
     v = compute_vitals([s], fires, window_days=14, now=NOW)[0]
-    assert v.health == _Health.DISABLED
+    assert v.health == Health.DISABLED
     assert v.enabled is False
 
 
 def test_token_split_and_dormant_cost_uses_always_on():
-    s = _replace(mk_skill("dead", tokens=5000), description_tokens=120, enabled=True)
+    s = replace(mk_skill("dead", tokens=5000), description_tokens=120, enabled=True)
     vitals = compute_vitals([s], [], window_days=14, now=NOW)
     v = vitals[0]
     assert v.always_on_tokens == 120
@@ -97,8 +94,8 @@ def test_token_split_and_dormant_cost_uses_always_on():
 
 
 def test_native_usage_reconciliation():
-    s = _replace(mk_skill("docx"), enabled=True)
-    usage = {"docx": _SkillUsage(usage_count=9, last_used_ms=int(NOW.timestamp() * 1000))}
+    s = replace(mk_skill("docx"), enabled=True)
+    usage = {"docx": SkillUsage(usage_count=9, last_used_ms=int(NOW.timestamp() * 1000))}
     v = compute_vitals([s], [fire("docx", 20, FireKind.INVOKE)], window_days=14,
                        now=NOW, usage=usage)[0]
     assert v.invoke_count == 9       # max(jsonl=1, native=9)
@@ -107,6 +104,6 @@ def test_native_usage_reconciliation():
 
 
 def test_disabled_excluded_from_dormant():
-    s = _replace(mk_skill("off", tokens=4000), enabled=False, description_tokens=90)
+    s = replace(mk_skill("off", tokens=4000), enabled=False, description_tokens=90)
     vitals = compute_vitals([s], [], window_days=14, now=NOW)
     assert dormant_token_cost(vitals, days=14, now=NOW) == 0
