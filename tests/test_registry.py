@@ -67,17 +67,17 @@ def test_frontmatter_with_colon_in_description_still_parses(tmp_path):
     # which is not strictly-valid YAML. We must still extract name/description.
     fm = (
         "---\n"
-        "name: ml-sprint\n"
-        'description: Use when the user names a session (e.g. "Day 9 morning: KV cache deep dive")\n'
+        "name: study-coach\n"
+        'description: Use when the user names a topic (e.g. "Module 3: caching deep dive")\n'
         "---\n# body"
     )
     root = tmp_path / "skills"
-    _write(root / "ml-sprint" / "SKILL.md", fm)
+    _write(root / "study-coach" / "SKILL.md", fm)
     skills = {s.name: s for s in scan_skills([(root, "user")])}
-    assert "ml-sprint" in skills
-    s = skills["ml-sprint"]
+    assert "study-coach" in skills
+    s = skills["study-coach"]
     assert s.frontmatter_valid is True
-    assert "Day 9 morning" in s.description
+    assert "Module 3" in s.description
     assert s.quality_score > 0
 
 

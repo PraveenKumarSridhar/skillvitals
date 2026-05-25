@@ -18,7 +18,7 @@ INVOKE = {
                   "cache_creation_input_tokens": 4876},
         "content": [
             {"type": "tool_use", "name": "Skill", "id": "toolu_1",
-             "input": {"skill": "resume-tailoring:resume-tailoring", "args": "JD: ..."}}
+             "input": {"skill": "doc-forge:doc-forge", "args": "JD: ..."}}
         ],
     },
 }
@@ -44,9 +44,9 @@ def test_parse_line_invoke():
     assert len(fires) == 1
     f = fires[0]
     assert f.kind == FireKind.INVOKE
-    assert f.skill_id == "resume-tailoring:resume-tailoring"
-    assert f.name == "resume-tailoring"
-    assert f.plugin == "resume-tailoring"
+    assert f.skill_id == "doc-forge:doc-forge"
+    assert f.name == "doc-forge"
+    assert f.plugin == "doc-forge"
     assert f.session_id == "sess-1"
     assert f.cli_version == "2.1.146"
     assert f.timestamp.tzinfo is not None

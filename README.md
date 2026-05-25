@@ -13,19 +13,20 @@ tells you *did it fire? when? at what context cost? is it dead weight?*
 $ skillvitals scan
 
                                   skillvitals
-┏━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━┳━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┓
-┃ skill                  ┃ fires ┃ engaged ┃  ctx ┃ last seen ┃ status         ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━╇━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━┩
-│ writing-plans          │     1 │     228 │ 1.5k │ today     │ ✅ healthy     │
-│ resume-tailoring       │     2 │      39 │ 8.9k │ 2d ago    │ ✅ healthy     │
-│ writing-skills         │     1 │      20 │ 5.6k │ today     │ ✅ healthy     │
-│ skill-creator          │     1 │      18 │ 8.2k │ today     │ ✅ healthy     │
-│ subagent-driven-devel… │     0 │       0 │ 3.1k │ never     │ 💤 never-fired │
-│ brainstorming          │     0 │       0 │ 2.6k │ never     │ 💤 never-fired │
-│ …                      │       │         │      │           │                │
-└────────────────────────┴───────┴─────────┴──────┴───────────┴────────────────┘
+┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━┳━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┓
+┃ skill              ┃ fires ┃ engaged ┃  ctx ┃ last seen ┃ status         ┃
+┡━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━╇━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━┩
+│ frontend-design    │    31 │     140 │ 6.4k │ today     │ ✅ healthy     │
+│ docx               │    47 │     120 │ 2.1k │ today     │ ✅ healthy     │
+│ pdf                │    23 │      60 │ 1.8k │ 1d ago    │ ✅ healthy     │
+│ sql-tuner          │     4 │       9 │ 2.6k │ 9d ago    │ ✅ healthy     │
+│ ab-test-coach      │     2 │       2 │ 5.7k │ 3d ago    │ ⚠️  misfiring  │
+│ leakcheck          │     1 │       3 │ 3.1k │ 40d ago   │ ⚠️  dormant    │
+│ data-analysis      │     0 │       0 │ 4.2k │ never     │ 💤 never-fired │
+│ changelog-writer   │     0 │       0 │ 1.4k │ never     │ 💤 never-fired │
+└────────────────────┴───────┴─────────┴──────┴───────────┴────────────────┘
 
-13 dormant/never-fired skills are costing you 23.5k tokens per session.
+3 dormant/never-fired skills are costing you 8.7k tokens per session.
 Run `skillvitals prescribe` for fixes.
 ```
 

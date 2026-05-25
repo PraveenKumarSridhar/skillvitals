@@ -16,15 +16,15 @@
 
 These shape the design and override PRD assumptions where they conflict:
 
-1. **Skill discovery:** `SKILL.md` files live under `~/.claude/skills/**`, `~/.claude/plugins/cache/**`, and project-local `.claude/skills/**`. The same skill appears multiple times (e.g. `resume-tailoring` in both a local dir and the plugin cache). **Must dedupe by normalized name**, preferring a canonical source.
-2. **Frontmatter:** YAML between `---` fences. Keys: `name` (bare, e.g. `resume-tailoring`), `description`.
+1. **Skill discovery:** `SKILL.md` files live under `~/.claude/skills/**`, `~/.claude/plugins/cache/**`, and project-local `.claude/skills/**`. The same skill can appear multiple times (e.g. in both a local dir and the plugin cache). **Must dedupe by normalized name**, preferring a canonical source.
+2. **Frontmatter:** YAML between `---` fences. Keys: `name` (bare, e.g. `some-skill`), `description`.
 3. **Activation signal — richer than the PRD's "Skill() tool calls":**
    - **Explicit fires:** assistant messages contain a `tool_use` block with `"name":"Skill"` and `input.skill` = the **namespaced** id (`plugin:skill`, e.g. `superpowers:writing-plans`). Each has a top-level `timestamp`. This is the true "fire."
    - **Engagement/attribution:** many lines carry top-level `attributionSkill` (namespaced id) + `attributionPlugin`. These tag every assistant message produced while a skill was active — a measure of *depth of use*, not just invocation. `message.usage` on these lines gives real token costs.
    - **DEVIATION FROM PRD:** the PRD only mentions `Skill()` tool calls. We capture both signals. Fire count = explicit invokes; engagement = attribution message count; health uses the ratio.
 4. **Session JSONL top-level keys of interest:** `type` (`user`/`assistant`/`system`/...), `timestamp` (ISO8601 Z), `sessionId`, `cwd`, `version` (e.g. `2.1.146`), `gitBranch`, `message` (with `usage`), `attributionSkill`, `attributionPlugin`, `toolUseResult`.
 5. **Name join:** logs use `plugin:skill`; frontmatter uses bare `skill`. Join on the skill segment (after the last `:`). Skills in logs but not registry = "orphan" (uninstalled/renamed). Skills in registry but never in logs = "never-fired".
-6. **Context cost:** estimate from `SKILL.md` byte length (`tokens ≈ ceil(chars/4)`). `resume-tailoring` ≈ 35.6 KB ≈ 8.9k tokens.
+6. **Context cost:** estimate from `SKILL.md` byte length (`tokens ≈ ceil(chars/4)`). A large skill at ≈ 35.6 KB ≈ 8.9k tokens.
 7. **Toolchain:** `uv` present, Python 3.12 local, `fastmcp` 3.3.1 installs clean, `sqlite3` available.
 
 ## File structure
@@ -130,7 +130,7 @@ Weighted components, each documented in `registry.py`:
 - [ ] Commit.
 
 ### Task 12: integration on real data
-- [ ] Run `skillvitals scan` / `report` / `dormancy` against real `~/.claude`. Verify the four real skills (resume-tailoring, writing-skills, skill-creator, writing-plans) show fires; dormant skills show context cost; no crashes; schema-drift handled.
+- [ ] Run `skillvitals scan` / `report` / `dormancy` against real `~/.claude`. Verify recently-used skills show fires; dormant skills show context cost; no crashes; schema-drift handled.
 - [ ] Commit.
 
 ### Task 13: README + packaging + final pass

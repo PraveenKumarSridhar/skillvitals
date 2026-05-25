@@ -5,7 +5,7 @@ description = "Skill observability for Claude Code — see which skills fire, wh
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
-authors = [{ name = "Pk", email = "prasri.pk@gmail.com" }]
+authors = [{ name = "Pk" }]
 keywords = ["claude", "claude-code", "skills", "mcp", "observability", "anthropic"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -26,9 +26,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pk/skillvitals"
-Repository = "https://github.com/pk/skillvitals"
-Issues = "https://github.com/pk/skillvitals/issues"
+Homepage = "https://github.com/PraveenKumarSridhar/skillvitals"
+Repository = "https://github.com/PraveenKumarSridhar/skillvitals"
+Issues = "https://github.com/PraveenKumarSridhar/skillvitals/issues"
 
 [project.optional-dependencies]
 # Opt-in: live activation testing and LLM-backed prescription rewrites.
