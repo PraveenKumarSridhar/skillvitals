@@ -153,7 +153,7 @@ Environment variables (all optional):
 
 ```bash
 uv sync --extra llm
-uv run pytest        # 47 tests
+uv run pytest        # 65 tests
 uv run ruff check src tests
 ```
 
