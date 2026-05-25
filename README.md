@@ -9,6 +9,8 @@ of tools to *generate* skill-activation hooks. `skillvitals` is the missing
 diagnostic layer: it treats every installed skill as a monitored service and
 tells you *did it fire? when? at what context cost? is it dead weight?*
 
+![skillvitals scan + prescribe demo](docs/skillvitals-demo.gif)
+
 ```text
 $ skillvitals scan
 
