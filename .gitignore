@@ -15,3 +15,6 @@ wheels/
 dashboard.html
 .coverage
 htmlcov/
+
+# launch drafts — keep local, do not publish
+docs/launch/
