@@ -7,8 +7,10 @@ NOW = datetime(2026, 5, 25, tzinfo=UTC)
 
 
 def mk_skill(name, tokens=3000):
+    # description_tokens (always-on) is a fraction of the body (on-activation)
     return Skill(name=name, description="d", path=f"/{name}", source="user", plugin=None,
-                 context_tokens=tokens, quality_score=50, quality_breakdown={}, frontmatter_valid=True)
+                 context_tokens=tokens, quality_score=50, quality_breakdown={},
+                 frontmatter_valid=True, description_tokens=tokens // 50)
 
 
 def fire(name, day, kind=FireKind.ATTRIBUTION, sid="s1"):
@@ -67,6 +69,44 @@ def test_find_dormant_and_token_cost():
     assert "dead" in names  # last fired 05-01, > 14 days
     assert "never" in names  # never fired counts as dead weight
     assert "live" not in names
-    # sorted by context cost descending
-    assert dead[0].context_tokens >= dead[-1].context_tokens
-    assert dormant_token_cost(vitals, days=14, now=NOW) == 5000 + 2000
+    # sorted by always-on (description) cost descending
+    assert dead[0].always_on_tokens >= dead[-1].always_on_tokens
+    # honest per-session cost is the always-on (description) tokens, not bodies
+    assert dormant_token_cost(vitals, days=14, now=NOW) == (5000 // 50) + (2000 // 50)
+
+
+from skillvitals.models import Health as _Health, SkillUsage as _SkillUsage
+from dataclasses import replace as _replace
+
+
+def test_disabled_overrides_healthy():
+    s = _replace(mk_skill("off"), enabled=False, description_tokens=100)
+    fires = [fire("off", 24, FireKind.INVOKE), *[fire("off", 24) for _ in range(5)]]
+    v = compute_vitals([s], fires, window_days=14, now=NOW)[0]
+    assert v.health == _Health.DISABLED
+    assert v.enabled is False
+
+
+def test_token_split_and_dormant_cost_uses_always_on():
+    s = _replace(mk_skill("dead", tokens=5000), description_tokens=120, enabled=True)
+    vitals = compute_vitals([s], [], window_days=14, now=NOW)
+    v = vitals[0]
+    assert v.always_on_tokens == 120
+    assert v.on_activation_tokens == 5000
+    assert dormant_token_cost(vitals, days=14, now=NOW) == 120  # not the body
+
+
+def test_native_usage_reconciliation():
+    s = _replace(mk_skill("docx"), enabled=True)
+    usage = {"docx": _SkillUsage(usage_count=9, last_used_ms=int(NOW.timestamp() * 1000))}
+    v = compute_vitals([s], [fire("docx", 20, FireKind.INVOKE)], window_days=14,
+                       now=NOW, usage=usage)[0]
+    assert v.invoke_count == 9       # max(jsonl=1, native=9)
+    assert v.native_usage_count == 9
+    assert v.source_discrepancy is not None
+
+
+def test_disabled_excluded_from_dormant():
+    s = _replace(mk_skill("off", tokens=4000), enabled=False, description_tokens=90)
+    vitals = compute_vitals([s], [], window_days=14, now=NOW)
+    assert dormant_token_cost(vitals, days=14, now=NOW) == 0
