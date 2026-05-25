@@ -91,3 +91,13 @@ def test_quality_score_rewards_triggers_and_specificity():
     )
     assert strong["total"] > weak["total"]
     assert strong["total"] <= 100 and weak["total"] >= 0
+
+
+def test_description_tokens_estimated(tmp_path):
+    fm = "---\nname: a\ndescription: " + ("word " * 40) + "\n---\nbody body body body"
+    root = tmp_path / "skills"
+    (root / "a").mkdir(parents=True)
+    (root / "a" / "SKILL.md").write_text(fm, encoding="utf-8")
+    s = {x.name: x for x in scan_skills([(root, "user")])}["a"]
+    assert s.description_tokens > 0
+    assert s.description_tokens < s.context_tokens

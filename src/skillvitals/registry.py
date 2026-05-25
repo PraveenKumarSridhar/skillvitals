@@ -170,6 +170,7 @@ def _scan_root(root: ScanRoot) -> list[Skill]:
                 quality_score=q["total"],
                 quality_breakdown=q,
                 frontmatter_valid=valid,
+                description_tokens=estimate_tokens(description),
             )
         )
     return skills
