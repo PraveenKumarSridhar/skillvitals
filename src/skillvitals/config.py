@@ -45,6 +45,11 @@ class Config:
         return self.home / "projects"
 
     @property
+    def claude_json_path(self) -> Path:
+        """Claude Code's global state file, which lives next to the .claude dir."""
+        return self.home.parent / ".claude.json"
+
+    @property
     def db_path(self) -> Path:
         return self.sv_home / "db.sqlite"
 
