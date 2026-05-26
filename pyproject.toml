@@ -1,6 +1,6 @@
 [project]
 name = "skillvitals"
-version = "0.2.0"
+version = "0.2.1"
 description = "Skill observability for Claude Code — see which skills fire, which are dormant, what they cost in context, and what's broken."
 readme = "README.md"
 license = { text = "MIT" }

@@ -14,19 +14,19 @@ tells you *did it fire? when? at what context cost? is it dead weight?*
 ```text
 $ skillvitals scan
 
-                                  skillvitals
-┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━┳━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┓
-┃ skill              ┃ fires ┃ engaged ┃  ctx ┃ last seen ┃ status         ┃
-┡━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━╇━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━┩
-│ frontend-design    │    31 │     140 │ 6.4k │ today     │ ✅ healthy     │
-│ docx               │    47 │     120 │ 2.1k │ today     │ ✅ healthy     │
-│ pdf                │    23 │      60 │ 1.8k │ 1d ago    │ ✅ healthy     │
-│ sql-tuner          │     4 │       9 │ 2.6k │ 9d ago    │ ✅ healthy     │
-│ ab-test-coach      │     2 │       2 │ 5.7k │ 3d ago    │ ⚠️  misfiring  │
-│ leakcheck          │     1 │       3 │ 3.1k │ 40d ago   │ ⚠️  dormant    │
-│ data-analysis      │     0 │       0 │ 4.2k │ never     │ 💤 never-fired │
-│ changelog-writer   │     0 │       0 │ 1.4k │ never     │ 🚫 disabled    │
-└────────────────────┴───────┴─────────┴──────┴───────────┴────────────────┘
+                                 skillvitals
+┏━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┓
+┃ skill            ┃ fires ┃ engaged ┃ on-fire ┃ last seen ┃ status         ┃
+┡━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━┩
+│ frontend-design  │    31 │     140 │    6.4k │ today     │ ✅ healthy     │
+│ docx             │    47 │     120 │    2.1k │ today     │ ✅ healthy     │
+│ pdf              │    23 │      60 │    1.8k │ 1d ago    │ ✅ healthy     │
+│ sql-tuner        │     4 │       9 │    2.6k │ 9d ago    │ ✅ healthy     │
+│ ab-test-coach    │     2 │       2 │    5.7k │ 3d ago    │ ⚠️  misfiring  │
+│ leakcheck        │     1 │       3 │    3.1k │ 40d ago   │ ⚠️  dormant    │
+│ data-analysis    │     0 │       0 │    4.2k │ never     │ 💤 never-fired │
+│ changelog-writer │     0 │       0 │    1.4k │ never     │ 🚫 disabled    │
+└──────────────────┴───────┴─────────┴─────────┴───────────┴────────────────┘
 
 2 dormant/never-fired skills add ~29 tokens of always-loaded descriptions per session.
 Their bodies (~7.3k tokens) load only when they activate.

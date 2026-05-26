@@ -86,7 +86,9 @@ def build_rich_table(vitals: list[SkillVitals]):
     table.add_column("skill")
     table.add_column("fires", justify="right")
     table.add_column("engaged", justify="right")
-    table.add_column("ctx", justify="right")  # body size; per-session framing is in the summary
+    # "on-fire" = body tokens, loaded only when the skill activates (not a per-session
+    # cost). Named explicitly so the column isn't mistaken for an always-on tax.
+    table.add_column("on-fire", justify="right")
     table.add_column("last seen")
     table.add_column("status")
     for v in sorted(vitals, key=_sort_key):
