@@ -21,3 +21,6 @@ docs/launch/
 
 .DS_Store
 **/.DS_Store
+
+# git worktrees created by EnterWorktree
+.claude/
